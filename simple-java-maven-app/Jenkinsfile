@@ -40,7 +40,7 @@ pipeline {
         stage('Deliver for test') {
             // 当分支为 test 时执行该阶段
             when {
-                branch 'test'
+                branch 'prod'
             }
             steps {
                 echo 'This is test env!!!'
