@@ -1,0 +1,61 @@
+pipeline {
+    agent { label 'agent-1' }
+
+    // 工具配置
+    tools {
+        maven 'Maven-3.9.9' // 这里指定了 Jenkins 工具配置中的 Maven 名称
+    }
+
+    options {
+        skipStagesAfterUnstable()
+    }
+    stages {
+        stage('Build') {
+            steps {
+                sh 'mvn -B -DskipTests clean package'
+            }
+        }
+        stage('Test') {
+            steps {
+                sh 'mvn test'
+            }
+            post {
+                always {
+                    junit 'target/surefire-reports/*.xml'
+                }
+            }
+        }
+        // 发布到开发环境
+        stage('Deliver for dev') {
+            // 当分支为 dev 时执行该阶段
+            when {
+                branch 'dev'
+            }
+            steps {
+                echo 'This is dev env!!!'
+            }
+        }
+
+        // 发布到测试环境
+        stage('Deliver for test') {
+            // 当分支为 test 时执行该阶段
+            when {
+                branch 'test'
+            }
+            steps {
+                echo 'This is test env!!!'
+            }
+        }
+
+        // 发布到生产环境
+        stage('Deliver for master') {
+            // 当分支为 master 时执行该阶段
+            when {
+                branch 'master'
+            }
+            steps {
+                sh './jenkins/scripts/deliver.sh'
+            }
+        }
+    }
+}
